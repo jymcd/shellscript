@@ -5,25 +5,6 @@ local event = event or require("event")
 
 local args = {...}
 
-local commands = {
-    echo = print,
-    exit = "exit",
-}
-
-local function runCommand(command,cargs)
-    --print(command,cargs)
-    cargs = cargs or ""
-    if command == "exit" then
-        for k,_ in pairs(commands) do
-            if commands.k == "exit" then
-                os.exit()
-            end
-        end
-    else
-        return commands[command](cargs)
-    end
-end
-
 local function split(inputstr)
         if sep == nil then
                 sep = "%s"
@@ -34,6 +15,30 @@ local function split(inputstr)
                 i = i + 1
         end
         return t
+end
+
+local function exec(script,arg)
+    local arg = arg or nil
+    assert(dofile(tostring(script))(arg))
+end
+
+local commands = {
+    echo = print,
+    exit = "exit",
+    exec = exec,
+}
+
+local function runCommand(command,cargs)
+    cargs = cargs or ""
+    if command == "exit" then
+        for k,_ in pairs(commands) do
+            if commands.k == "exit" then
+                os.exit(0)
+            end
+        end
+    else
+        return commands[command](cargs)
+    end
 end
 
 local usage = [[USAGE:
@@ -53,7 +58,7 @@ if args[1] == "-c" then
     local rCommArgs = split(args[2])
         runCommand(rCommArgs[1],rCommArgs[2])
 elseif args[1] == "-f" then
-    local file = assert(io.open(args[2]..".sh","r"))
+    local file = assert(io.open(args[2]..".sh","r"),"File Not Found")
     local com = {}
     for line in file:lines() do
         table.insert (com, line);
